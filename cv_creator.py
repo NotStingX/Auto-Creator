@@ -12,13 +12,12 @@ class PDF(FPDF):
         pass
 
 
-# --- Streamlit Page Config ---
+# --- Streamlit UI (unchanged, same as before) ---
 st.set_page_config(page_title="📄 CV Creator", layout="centered")
 st.title("📄 Automatic CV Creator")
-st.write("Fill in the details below to generate your CV")
 
 # --- Personal Info ---
-st.header("👤 Personal Information")
+st.header("Personal Information")
 name = st.text_input("Full Name")
 birth_date = st.date_input("Birth Date")
 email = st.text_input("Email")
@@ -27,35 +26,36 @@ address = st.text_area("Address")
 photo = st.file_uploader("Upload a Profile Photo", type=["jpg", "jpeg", "png"])
 
 # --- Profile ---
-st.header("📌 Profile Summary")
+st.header("Profile Summary")
 profile_summary = st.text_area("Write a short profile/introduction")
 
 # --- Skills ---
-st.header("🛠 Skills")
+st.header("Skills")
 num_skills = st.number_input("How many skills do you want to add?", min_value=0, max_value=20, value=3)
 skills = [st.text_input(f"Skill #{i+1}") for i in range(num_skills)]
 
 # --- Experiences ---
-st.header("💼 Experiences")
+st.header("Experiences")
 num_exp = st.number_input("How many experiences do you want to add?", min_value=0, max_value=10, value=2)
 experiences = [st.text_area(f"Experience #{i+1}") for i in range(num_exp)]
 
 # --- Education ---
-st.header("🎓 Education")
+st.header("Education")
 num_edu = st.number_input("How many education details do you want to add?", min_value=0, max_value=10, value=2)
 education = [st.text_area(f"Education #{i+1}") for i in range(num_edu)]
 
+
 # --- Generate CV ---
-if st.button("📄 Generate CV"):
+if st.button("Generate CV"):
     pdf = PDF("P", "mm", "A4")
     pdf.add_page()
 
     # --- Background ---
-    pdf.set_fill_color(30, 30, 30)  # Dark gray
-    pdf.rect(0, 0, 210, 297, "F")  # Fill whole page
+    pdf.set_fill_color(30, 30, 30)  # Dark gray background
+    pdf.rect(0, 0, 210, 297, "F")
 
     # --- Title ---
-    pdf.set_text_color(255, 215, 0)  # Gold/yellow
+    pdf.set_text_color(255, 215, 0)  # Yellow
     pdf.set_font("Helvetica", "B", 24)
     pdf.cell(0, 20, name, ln=True, align="C")
 
@@ -69,20 +69,21 @@ if st.button("📄 Generate CV"):
 
     # --- Contact Info ---
     pdf.set_font("Helvetica", "", 12)
-    pdf.set_text_color(255, 255, 255)
+    pdf.set_text_color(255, 255, 255)  # White text
     pdf.ln(5)
     pdf.multi_cell(0, 8, f"📅 {birth_date}\n📧 {email}\n📞 {phone}\n📍 {address}")
 
-    # --- Section: Profile ---
-    pdf.ln(5)
-    pdf.set_text_color(255, 215, 0)
-    pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 10, "📌 Profile", ln=True)
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_font("Helvetica", "", 12)
-    pdf.multi_cell(0, 8, profile_summary)
+    # --- Profile ---
+    if profile_summary:
+        pdf.ln(5)
+        pdf.set_text_color(255, 215, 0)
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(0, 10, "📌 Profile", ln=True)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Helvetica", "", 12)
+        pdf.multi_cell(0, 8, profile_summary)
 
-    # --- Section: Skills ---
+    # --- Skills ---
     if skills:
         pdf.ln(3)
         pdf.set_text_color(255, 215, 0)
@@ -94,7 +95,7 @@ if st.button("📄 Generate CV"):
             if skill:
                 pdf.cell(0, 8, f"• {skill}", ln=True)
 
-    # --- Section: Experience ---
+    # --- Experiences ---
     if experiences:
         pdf.ln(3)
         pdf.set_text_color(255, 215, 0)
@@ -107,7 +108,7 @@ if st.button("📄 Generate CV"):
                 pdf.multi_cell(0, 8, f"• {exp}")
                 pdf.ln(1)
 
-    # --- Section: Education ---
+    # --- Education ---
     if education:
         pdf.ln(3)
         pdf.set_text_color(255, 215, 0)
@@ -120,7 +121,7 @@ if st.button("📄 Generate CV"):
                 pdf.multi_cell(0, 8, f"• {edu}")
                 pdf.ln(1)
 
-    # --- Save PDF ---
+    # --- Save & Download ---
     pdf_path = "Generated_CV.pdf"
     pdf.output(pdf_path)
 
