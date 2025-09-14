@@ -1,129 +1,142 @@
-import re
+import streamlit as st
+from fpdf import FPDF
+from PIL import Image
+import os
 
-print("\033[1;93mHello,👋 Welcome to the Automatic CV Creator. This application was created by - Avin Regmi.")
-print("\033[1;93mTo start making the CV we might require some information.\n")
-print("\033[1;93mNote: None of this information is being stored. So, let's begin!.\n")
+# Custom PDF class
+class PDF(FPDF):
+    def header(self):
+        pass
 
-# Collecting user input
-Name = input(f"\033[1;97mWhat is your name?:\033[1;93m ")
-Howmuchyear = int(input(f"\033[1;97mWhat is your current age?:\033[1;93m "))
-Field = input(f"\033[1;97mWhat is your field? (Science, Maths, Design, Arts, etc):\033[1;93m ")
+    def footer(self):
+        pass
 
-while True:
-    BornStatement = input(f"\033[1;97mWhat was your birth date (YYYY/MM/DD)?: ")
-    if re.match(r"^\d{4}/\d{2}/\d{2}$", BornStatement):
-        break
-    else:
-        print("❌ Please enter in correct format: YYYY/MM/DD")
 
-PhoneNumber = input(f"\033[1;97mWhat is your business email or phone number?: ")
-LivingSpace = input(f"\033[1;97mWhere do you live?: ")
+# Streamlit app
+st.set_page_config(page_title="CV Creator", layout="centered")
+st.title("📄 Automatic CV Creator")
 
-# ------------------- EDUCATION -------------------
-educations = []
-Education = int(input(f"\033[1;97mHow many education levels do you have? "))
-for i in range(Education):
-    while True:
-        education = input(f"Education #{i + 1} (Format: Level for Subject): ")
-        if re.match(r"^[A-Za-z ]+ for [A-Za-z ]+$", education):
-            educations.append(education)
-            break
-        else:
-            print("❌ Please enter in correct format: (Education_level) for (Subject)")
+st.header("Personal Information")
+name = st.text_input("Full Name")
+birthdate = st.text_input("Birthdate (DD/MM/YYYY)")
+email = st.text_input("Email")
+phone = st.text_input("Phone")
+address = st.text_input("Address")
+photo = st.file_uploader("Upload Profile Photo", type=["jpg", "jpeg", "png"])
 
-# ------------------- SKILLS -------------------
+st.header("Profile")
+profile = st.text_area("Short Profile Introduction")
+
+st.header("Skills")
+num_skills = st.number_input("How many skills do you want to add?", min_value=0, max_value=20, step=1)
 skills = []
-Skills = int(input(f"\033[1;97mHow many skills do you have?: "))
-for i in range(Skills):
-    skill = input(f"Skill #{i+1}: ")
-    skills.append(skill)
+for i in range(int(num_skills)):
+    skills.append(st.text_input(f"Skill #{i+1}"))
 
-# ------------------- HOBBIES -------------------
-Hobbies = []
-HobbiesNumber = int(input(f"\033[1;97mHow many hobbies do you have? [Write in Number]: "))
-for i in range(HobbiesNumber):
-    hob = input(f"Hobby #{i+1}: ")
-    Hobbies.append(hob)
-print(" ")
-
-# ------------------- LANGUAGES -------------------
-languages = []
-NumberOfLang = int(input(f"\033[1;97m🌐 How many languages can you speak?: "))
-for i in range(NumberOfLang):
-    while True:
-        Language = input(f"Language #{i+1} (Format: Language - Level): ")
-        if re.match(r"^[A-Za-z ]+\s*-\s*[A-Za-z ]+$", Language):
-            languages.append(Language)
-            break
-        else:
-            print("❌ Please enter in correct format: [Language_name] - [Language_Level]")
-print(" ")
-
-# ------------------- WORK EXPERIENCES -------------------
+st.header("Experience")
+num_experiences = st.number_input("How many experiences do you want to add?", min_value=0, max_value=10, step=1)
 experiences = []
-num_exp = int(input(f"\033[1;97m🧰 How many work experiences do you have (Ex: 2,3,4,etc.)?: "))
-for i in range(num_exp):
-    print(f"\033[1;97m🧰 Work Experience #{i+1}")
-    Job = input("Job Title: ")
-    Company = input("Company Name: ")
-    Years = input("Years (e.g., 2020-2023): ")
-    Description = input("Brief Description: ")
-    experiences.append({
-        "Job": Job,
-        "Company": Company,
-        "Years": Years,
-        "Description": Description
-    })
+for i in range(int(num_experiences)):
+    exp_title = st.text_input(f"Experience #{i+1} - Job Title")
+    exp_desc = st.text_area(f"Experience #{i+1} - Description")
+    experiences.append((exp_title, exp_desc))
 
-# ------------------- CERTIFICATIONS -------------------
-certifications = []
-num_certs = int(input(f"\033[1;97m📜 How many certifications do you want to add?: "))
-for i in range(num_certs):
-    print(f"\033[1;97m📄 Certification #{i+1}")
-    cert_title = input("Certification Title: ")
-    issuer = input("Issued by: ")
-    certifications.append({
-        "Title": cert_title,
-        "Issuer": issuer
-    })
+st.header("Education")
+num_edu = st.number_input("How many education entries do you want to add?", min_value=0, max_value=10, step=1)
+education = []
+for i in range(int(num_edu)):
+    edu_title = st.text_input(f"Education #{i+1} - Degree/Program")
+    edu_school = st.text_input(f"Education #{i+1} - School/Institution")
+    education.append((edu_title, edu_school))
 
-# ------------------- PROCESSING -------------------
-print("\nProcessing your data...")
-for dots in range(1, 5):
-    print("." * dots)
 
-# ------------------- OUTPUT -------------------
-print(f"\n\033[1;93mAbout Me:\033[0m")
-print(f"\033[1;97mI am a dedicated and adaptable individual with a strong passion for growth and learning.")
-print(f"My name is {Name}, and I am {Howmuchyear} years old.")
-print(f"I aim to grow in the field of {Field} while contributing value to teams and organizations.\033[0m\n")
+# Generate PDF
+if st.button("Generate CV"):
+    pdf = PDF()
+    pdf.add_page()
 
-print(f"\033[1;93mContacts:\033[0m")
-print(f"\033[1;97m📞 {PhoneNumber}")
-print(f"📍 {LivingSpace}")
-print(f"🎂 Born in: {BornStatement}\033[0m\n")
+    # Set background black/gray
+    pdf.set_fill_color(30, 30, 30)  # dark gray
+    pdf.rect(0, 0, 210, 297, 'F')   # A4 size background
 
-print(f"\033[1;93mSkills:\033[0m")
-for i, skil in enumerate(skills, 1):
-    print(f"\033[1;97m{i}. {skil}\033[0m")
+    # Add profile photo if uploaded
+    if photo:
+        img = Image.open(photo)
+        img_path = "temp_photo.png"
+        img.save(img_path)
+        pdf.image(img_path, 160, 10, 35, 35)
+        os.remove(img_path)
 
-print(f"\n\033[1;93mLanguages:\033[0m")
-for i, lang in enumerate(languages, 1):
-    print(f"\033[1;97m{i}. {lang}\033[0m")
+    # Title (name)
+    pdf.set_text_color(255, 255, 0)  # yellow
+    pdf.set_font("Arial", 'B', 20)
+    pdf.cell(0, 10, name, ln=True, align="L")
 
-print(f"\n\033[1;93mWork Experiences:\033[0m")
-for i, exp in enumerate(experiences, 1):
-    print(f"\033[1;97m{i}. {exp['Job']} at {exp['Company']} ({exp['Years']})")
-    print(f"   → {exp['Description']}\033[0m")
+    pdf.set_font("Arial", '', 12)
+    pdf.set_text_color(255, 255, 255)  # white for text
+    pdf.cell(0, 10, f"Birthdate: {birthdate}", ln=True)
+    pdf.cell(0, 10, f"Email: {email}", ln=True)
+    pdf.cell(0, 10, f"Phone: {phone}", ln=True)
+    pdf.cell(0, 10, f"Address: {address}", ln=True)
 
-print(f"\n\033[1;93mEducation:\033[0m")
-for i, edu in enumerate(educations, 1):
-    print(f"\033[1;97m{i}. {edu}\033[0m")
+    pdf.ln(5)
 
-print(f"\n\033[1;93mHobbies:\033[0m")
-for i, hob in enumerate(Hobbies, 1):
-    print(f"\033[1;97m{i}. {hob}\033[0m")
+    # Profile
+    pdf.set_font("Arial", 'B', 16)
+    pdf.set_text_color(255, 255, 0)  # yellow heading
+    pdf.cell(0, 10, "PROFILE", ln=True)
 
-print(f"\n\033[1;93mCertifications:\033[0m")
-for i, cert in enumerate(certifications, 1):
-    print(f"\033[1;97m{i}. {cert['Title']} (Issued by: {cert['Issuer']})\033[0m")
+    pdf.set_font("Arial", '', 12)
+    pdf.set_text_color(255, 255, 255)
+    pdf.multi_cell(0, 10, profile)
+
+    pdf.ln(5)
+
+    # Skills
+    if skills:
+        pdf.set_font("Arial", 'B', 16)
+        pdf.set_text_color(255, 255, 0)
+        pdf.cell(0, 10, "SKILLS", ln=True)
+
+        pdf.set_font("Arial", '', 12)
+        pdf.set_text_color(255, 255, 255)
+        for skill in skills:
+            pdf.cell(0, 10, f"- {skill}", ln=True)
+
+        pdf.ln(5)
+
+    # Experience
+    if experiences:
+        pdf.set_font("Arial", 'B', 16)
+        pdf.set_text_color(255, 255, 0)
+        pdf.cell(0, 10, "EXPERIENCE", ln=True)
+
+        pdf.set_font("Arial", '', 12)
+        pdf.set_text_color(255, 255, 255)
+        for title, desc in experiences:
+            pdf.set_font("Arial", 'B', 12)
+            pdf.cell(0, 10, title, ln=True)
+            pdf.set_font("Arial", '', 12)
+            pdf.multi_cell(0, 10, desc)
+            pdf.ln(3)
+
+        pdf.ln(5)
+
+    # Education
+    if education:
+        pdf.set_font("Arial", 'B', 16)
+        pdf.set_text_color(255, 255, 0)
+        pdf.cell(0, 10, "EDUCATION", ln=True)
+
+        pdf.set_font("Arial", '', 12)
+        pdf.set_text_color(255, 255, 255)
+        for degree, school in education:
+            pdf.cell(0, 10, f"{degree} - {school}", ln=True)
+
+    # Save PDF
+    pdf_output = "cv_output.pdf"
+    pdf.output(pdf_output)
+
+    # Show download link
+    with open(pdf_output, "rb") as f:
+        st.download_button("📥 Download CV", f, file_name="My_CV.pdf")
